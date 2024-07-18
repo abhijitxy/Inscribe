@@ -1,6 +1,10 @@
+"use client";
 import Link from "next/link";
+import { useChat } from "ai/react";
 
 export default function HomePage() {
+  const { handleInputChange, handleSubmit, messages, input } = useChat();
+
   return (
     <main className="relative flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c] text-white">
       <div className="absolute top-4 right-4">
@@ -37,6 +41,28 @@ export default function HomePage() {
               deploy it.
             </div>
           </Link>
+        </div>
+        <div className="w-full max-w-lg flex flex-col gap-4">
+          <div className="flex flex-col gap-2">
+            {messages.map((msg, index) => (
+              <div key={index} className="p-4 bg-white/10 rounded-lg">
+                {msg.content}
+              </div>
+            ))}
+          </div>
+          <input
+            type="text"
+            value={input}
+            onChange={handleInputChange}
+            className="w-full rounded-xl bg-white/10 p-4 text-white placeholder-gray-300"
+            placeholder="Type your message..."
+          />
+          <button
+            onClick={handleSubmit}
+            className="items-center bg-white/10 p-4 text-white hover:bg-indigo-400 hover:text-black rounded-md py-2 px-8"
+          >
+            Submit
+          </button>
         </div>
       </div>
     </main>
