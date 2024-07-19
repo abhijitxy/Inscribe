@@ -17,6 +17,7 @@
   "dependencies": {
     "@ai-sdk/openai": "^0.0.36",
     "@auth/prisma-adapter": "^1.6.0",
+    "@excalidraw/excalidraw": "^0.17.6",
     "@prisma/client": "^5.14.0",
     "@t3-oss/env-nextjs": "^0.10.1",
     "ai": "^3.2.26",

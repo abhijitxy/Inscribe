@@ -9,7 +9,13 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
 
   const handleSignIn = async () => {
-    await signIn('credentials', { redirect: false, email, password });
+    const result = await signIn('credentials', { redirect: false, email, password });
+    if (result?.ok) {
+      window.location.href = '/draw';
+    } else {
+        console.log(result);
+
+    }
   };
 
   return (
