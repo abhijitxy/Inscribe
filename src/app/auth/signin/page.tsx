@@ -1,18 +1,23 @@
 "use client";
 import { signIn } from 'next-auth/react';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, type FormEvent } from 'react';
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
 
-  const handleSignIn = async () => {
-    const result = await signIn('credentials', { redirect: false, email, password });
-    if (result?.ok) {
-      window.location.href = '/draw';
-    } else {
-      console.log(result);
+  const handleSignIn = async (e: FormEvent) => {
+    e.preventDefault();
+    try {
+      const result = await signIn('credentials', { redirect: false, email, password });
+      if (result?.ok) {
+        window.location.href = '/draw';
+      } else {
+        console.error(result?.error);
+      }
+    } catch (error) {
+      console.error('Error during sign-in:', error);
     }
   };
 
@@ -27,7 +32,7 @@ export default function LoginPage() {
           <p className="text-gray-300 mb-4 text-center">
             <Link href="/signup" className="text-[hsl(280,100%,70%)] hover:underline">Already have an account?</Link>
           </p>
-          <form className="w-full" onSubmit={(e) => { e.preventDefault(); handleSignIn(); }}>
+          <form className="w-full" onSubmit={handleSignIn}>
             <div className="mb-4">
               <label className="block text-white text-sm mb-1" htmlFor="email">
                 Email address
@@ -95,3 +100,4 @@ export default function LoginPage() {
     </main>
   );
 }
+
