@@ -12,7 +12,7 @@ export default function LoginPage() {
     try {
       const result = await signIn('credentials', { redirect: false, email, password });
       if (result?.ok) {
-        window.location.href = '/draw';
+        window.location.href = '/chat';
       } else {
         console.error(result?.error);
       }
