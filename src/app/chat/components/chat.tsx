@@ -1,7 +1,8 @@
 "use client";
-import React, { useState } from 'react';
-import NoteSidebar from '../components/Sidebar';
-import { PlusCircle, Menu } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { PlusCircle, Menu, Sparkles } from 'lucide-react';
+import NoteSidebar from './Sidebar';
+import { getAnswer } from '@/app/action';
 
 interface Note {
   id: string;
@@ -33,6 +34,9 @@ export default function NoteTakingApp() {
   ]);
   const [selectedNote, setSelectedNote] = useState<Note | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isAIEnabled, setIsAIEnabled] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const handleNewNote = () => {
     const newNote: Note = {
@@ -45,24 +49,53 @@ export default function NoteTakingApp() {
     setSelectedNote(newNote);
   };
 
-  const handleNoteChange = (field: 'title' | 'content', value: string) => {
+  const handleNoteChange = async (field: 'title' | 'content', value: string) => {
     if (selectedNote) {
       const updatedNote = { ...selectedNote, [field]: value };
       setSelectedNote(updatedNote);
       setNotes(notes.map(note => note.id === selectedNote.id ? updatedNote : note));
+
+      if (field === 'content') {
+        await handleAIAssist(value);
+      }
+    }
+  };
+
+  const handleAIAssist = async (content: string) => {
+    if (content.endsWith('/')) {
+      setIsAIEnabled(true);
+      setIsLoading(true);
+      const prompt = content.slice(0, -1).trim(); // Remove the '/' from the input
+      try {
+        const { text } = await getAnswer(prompt);
+        setSelectedNote(prev => {
+          if (prev) {
+            const updatedContent = prev.content.slice(0, -1) + " " + text;
+            return { ...prev, content: updatedContent };
+          }
+          return prev;
+        });
+      } catch (error) {
+        console.error("Error getting AI response:", error);
+      } finally {
+        setIsLoading(false);
+        setIsAIEnabled(false);
+      }
     }
   };
 
   const handleSelectFolder = (id: string) => {
     // Filter notes by folder
     const filteredNotes = notes.filter(note => note.folderId === id);
-    // You might want to update the UI to show only these notes
+    // TODO: Update UI to show only these notes
+    console.log("Selected folder:", id);
   };
 
   const handleSelectTag = (id: string) => {
     // Filter notes by tag
     const filteredNotes = notes.filter(note => note.tags.includes(id));
-    // You might want to update the UI to show only these notes
+    // TODO: Update UI to show only these notes
+    console.log("Selected tag:", id);
   };
 
   const handleSearch = (query: string) => {
@@ -71,7 +104,8 @@ export default function NoteTakingApp() {
       note.title.toLowerCase().includes(query.toLowerCase()) || 
       note.content.toLowerCase().includes(query.toLowerCase())
     );
-    // Update UI to show search results
+    // TODO: Update UI to show search results
+    console.log("Search query:", query);
   };
 
   const toggleSidebar = () => {
@@ -118,12 +152,20 @@ export default function NoteTakingApp() {
                 className="bg-neutral-800 text-white p-2 md:p-3 rounded-md mb-4 text-lg md:text-xl font-semibold"
                 placeholder="Note title"
               />
-              <textarea
-                value={selectedNote.content}
-                onChange={(e) => handleNoteChange('content', e.target.value)}
-                className="flex-1 bg-neutral-800 text-white p-2 md:p-3 rounded-md resize-none text-sm md:text-base"
-                placeholder="Start typing your note..."
-              />
+              <div className="relative flex-1">
+                <textarea
+                  ref={textareaRef}
+                  value={selectedNote.content}
+                  onChange={(e) => handleNoteChange('content', e.target.value)}
+                  className="w-full h-full bg-neutral-800 text-white p-2 md:p-3 rounded-md resize-none text-sm md:text-base"
+                  placeholder="Start typing your note... (Type '/' to enable AI assist)"
+                />
+                {isLoading && (
+                  <div className="absolute top-2 right-2">
+                    <Sparkles className="w-5 h-5 text-indigo-400 animate-pulse" />
+                  </div>
+                )}
+              </div>
             </div>
           ) : (
             <div className="flex-1 flex items-center justify-center text-neutral-500">
