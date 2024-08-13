@@ -1,8 +1,9 @@
 "use client";
+
 import React, { useState, useRef, useEffect } from 'react';
 import { PlusCircle, Menu, Sparkles } from 'lucide-react';
 import NoteSidebar from './Sidebar';
-import { getAnswer } from '@/app/action';
+import { getNotes, addNote, updateNote, deleteNote, getFolders, getTags, getAnswer } from '@/app/action';
 
 interface Note {
   id: string;
@@ -24,88 +25,110 @@ interface Tag {
 
 export default function NoteTakingApp() {
   const [notes, setNotes] = useState<Note[]>([]);
-  const [folders, setFolders] = useState<Folder[]>([
-    { id: '1', name: 'Personal' },
-    { id: '2', name: 'Work' },
-  ]);
-  const [tags, setTags] = useState<Tag[]>([
-    { id: '1', name: 'Important' },
-    { id: '2', name: 'Todo' },
-  ]);
+  const [folders, setFolders] = useState<Folder[]>([]);
+  const [tags, setTags] = useState<Tag[]>([]);
   const [selectedNote, setSelectedNote] = useState<Note | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isAIEnabled, setIsAIEnabled] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const updateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  const handleNewNote = () => {
+  useEffect(() => {
+    fetchData();
+    return () => {
+      if (updateTimeoutRef.current) {
+        clearTimeout(updateTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  const fetchData = async () => {
+    const [fetchedNotes, fetchedFolders, fetchedTags] = await Promise.all([
+      getNotes(),
+      getFolders(),
+      getTags()
+    ]);
+    setNotes(fetchedNotes);
+    setFolders(fetchedFolders);
+    setTags(fetchedTags);
+  };
+
+  const handleNewNote = async () => {
     const newNote: Note = {
       id: Date.now().toString(),
       title: 'New Note',
       content: '',
       tags: [],
     };
-    setNotes([...notes, newNote]);
+    setNotes(prevNotes => [...prevNotes, newNote]);
     setSelectedNote(newNote);
+    await addNote(newNote);
   };
 
-  const handleNoteChange = async (field: 'title' | 'content', value: string) => {
+  const handleNoteChange = (field: 'title' | 'content', value: string) => {
     if (selectedNote) {
       const updatedNote = { ...selectedNote, [field]: value };
       setSelectedNote(updatedNote);
-      setNotes(notes.map(note => note.id === selectedNote.id ? updatedNote : note));
+      setNotes(prevNotes => 
+        prevNotes.map(note => note.id === selectedNote.id ? updatedNote : note)
+      );
 
-      if (field === 'content') {
-        await handleAIAssist(value);
+      if (updateTimeoutRef.current) {
+        clearTimeout(updateTimeoutRef.current);
+      }
+
+      updateTimeoutRef.current = setTimeout(async () => {
+        await updateNote(updatedNote);
+      }, 2000);
+
+      if (field === 'content' && value.endsWith('/')) {
+        handleAIAssist(value);
       }
     }
   };
 
   const handleAIAssist = async (content: string) => {
-    if (content.endsWith('/')) {
-      setIsAIEnabled(true);
-      setIsLoading(true);
-      const prompt = content.slice(0, -1).trim(); // Remove the '/' from the input
-      try {
-        const { text } = await getAnswer(prompt);
-        setSelectedNote(prev => {
-          if (prev) {
-            const updatedContent = prev.content.slice(0, -1) + " " + text;
-            return { ...prev, content: updatedContent };
-          }
-          return prev;
-        });
-      } catch (error) {
-        console.error("Error getting AI response:", error);
-      } finally {
-        setIsLoading(false);
-        setIsAIEnabled(false);
+    setIsAIEnabled(true);
+    setIsLoading(true);
+    const prompt = content.slice(0, -1).trim();
+    try {
+      const { text } = await getAnswer(prompt);
+      if (selectedNote) {
+        const updatedNote = {
+          ...selectedNote,
+          content: selectedNote.content.slice(0, -1) + " " + text
+        };
+        setSelectedNote(updatedNote);
+        setNotes(prevNotes => 
+          prevNotes.map(note => note.id === selectedNote.id ? updatedNote : note)
+        );
+        await updateNote(updatedNote);
       }
+    } catch (error) {
+      console.error("Error getting AI response:", error);
+    } finally {
+      setIsLoading(false);
+      setIsAIEnabled(false);
     }
   };
 
   const handleSelectFolder = (id: string) => {
-    // Filter notes by folder
     const filteredNotes = notes.filter(note => note.folderId === id);
-    // TODO: Update UI to show only these notes
-    console.log("Selected folder:", id);
+    setNotes(filteredNotes);
   };
 
   const handleSelectTag = (id: string) => {
-    // Filter notes by tag
     const filteredNotes = notes.filter(note => note.tags.includes(id));
-    // TODO: Update UI to show only these notes
-    console.log("Selected tag:", id);
+    setNotes(filteredNotes);
   };
 
   const handleSearch = (query: string) => {
-    // Implement search functionality
     const searchResults = notes.filter(note => 
       note.title.toLowerCase().includes(query.toLowerCase()) || 
       note.content.toLowerCase().includes(query.toLowerCase())
     );
-    // TODO: Update UI to show search results
-    console.log("Search query:", query);
+    setNotes(searchResults);
   };
 
   const toggleSidebar = () => {
@@ -120,17 +143,19 @@ export default function NoteTakingApp() {
   }, [selectedNote?.content]);
 
   return (
-    <div className="flex h-screen bg-neutral-950 text-white">
+    <div className="flex h-screen bg-neutral-950 text-white overflow-hidden">
       <NoteSidebar 
+        notes={notes}
         folders={folders}
         tags={tags}
+        onSelectNote={setSelectedNote}
         onSelectFolder={handleSelectFolder}
         onSelectTag={handleSelectTag}
         onSearch={handleSearch}
         isOpen={isSidebarOpen}
         onClose={() => setIsSidebarOpen(false)}
       />
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col overflow-hidden">
         <div className="flex justify-between items-center p-4 md:p-6 border-b border-neutral-800">
           <div className="flex items-center">
             <button
@@ -149,9 +174,9 @@ export default function NoteTakingApp() {
             New Note
           </button>
         </div>
-        <div className="flex-1 p-4 md:p-6 overflow-y-auto">
+        <div className="flex-1 overflow-auto p-4 md:p-6">
           {selectedNote ? (
-            <div className="flex-1 flex flex-col bg-neutral-900 rounded-lg p-4 shadow-lg">
+            <div className="flex flex-col h-full bg-neutral-900 rounded-lg p-4 shadow-lg">
               <input
                 type="text"
                 value={selectedNote.title}
@@ -159,14 +184,13 @@ export default function NoteTakingApp() {
                 className="bg-neutral-800 text-white p-2 md:p-3 rounded-md mb-4 text-lg md:text-xl font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 placeholder="Note title"
               />
-              <div className="relative flex-1">
+              <div className="relative flex-1 overflow-hidden">
                 <textarea
                   ref={textareaRef}
                   value={selectedNote.content}
                   onChange={(e) => handleNoteChange('content', e.target.value)}
-                  className="w-full min-h-[200px] bg-neutral-800 text-white p-2 md:p-3 rounded-md resize-none text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full h-full min-h-[200px] bg-neutral-800 text-white p-2 md:p-3 rounded-md resize-none text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-indigo-500 overflow-auto"
                   placeholder="Start typing your note... (Type '/' to enable AI assist)"
-                  style={{ overflow: 'hidden' }}
                 />
                 {isLoading && (
                   <div className="absolute top-2 right-2">
