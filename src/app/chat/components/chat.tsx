@@ -112,6 +112,13 @@ export default function NoteTakingApp() {
     setIsSidebarOpen(!isSidebarOpen);
   };
 
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+    }
+  }, [selectedNote?.content]);
+
   return (
     <div className="flex h-screen bg-neutral-950 text-white">
       <NoteSidebar 
@@ -124,11 +131,11 @@ export default function NoteTakingApp() {
         onClose={() => setIsSidebarOpen(false)}
       />
       <div className="flex-1 flex flex-col">
-        <div className="flex justify-between items-center p-4 md:p-6">
+        <div className="flex justify-between items-center p-4 md:p-6 border-b border-neutral-800">
           <div className="flex items-center">
             <button
               onClick={toggleSidebar}
-              className="mr-4 md:hidden"
+              className="mr-4 md:hidden text-neutral-400 hover:text-white transition-colors"
             >
               <Menu className="w-6 h-6" />
             </button>
@@ -142,14 +149,14 @@ export default function NoteTakingApp() {
             New Note
           </button>
         </div>
-        <div className="flex-1 p-4 md:p-6">
+        <div className="flex-1 p-4 md:p-6 overflow-y-auto">
           {selectedNote ? (
-            <div className="flex-1 flex flex-col bg-neutral-900 rounded-lg p-4">
+            <div className="flex-1 flex flex-col bg-neutral-900 rounded-lg p-4 shadow-lg">
               <input
                 type="text"
                 value={selectedNote.title}
                 onChange={(e) => handleNoteChange('title', e.target.value)}
-                className="bg-neutral-800 text-white p-2 md:p-3 rounded-md mb-4 text-lg md:text-xl font-semibold"
+                className="bg-neutral-800 text-white p-2 md:p-3 rounded-md mb-4 text-lg md:text-xl font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 placeholder="Note title"
               />
               <div className="relative flex-1">
@@ -157,8 +164,9 @@ export default function NoteTakingApp() {
                   ref={textareaRef}
                   value={selectedNote.content}
                   onChange={(e) => handleNoteChange('content', e.target.value)}
-                  className="w-full h-full bg-neutral-800 text-white p-2 md:p-3 rounded-md resize-none text-sm md:text-base"
+                  className="w-full min-h-[200px] bg-neutral-800 text-white p-2 md:p-3 rounded-md resize-none text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   placeholder="Start typing your note... (Type '/' to enable AI assist)"
+                  style={{ overflow: 'hidden' }}
                 />
                 {isLoading && (
                   <div className="absolute top-2 right-2">
