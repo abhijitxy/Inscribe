@@ -18,7 +18,7 @@ export default function Header() {
             height={64}
             className="mr-3"
           />
-          <span className="text-2xl font-bold text-white">CodeSage</span>
+          <span className="text-2xl font-bold text-white">Inscribe</span>
         </div>
 
         <div className="flex space-x-2">
