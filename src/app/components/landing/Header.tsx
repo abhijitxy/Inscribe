@@ -8,7 +8,7 @@ export default function Header() {
   const { status } = useSession();
 
   return (
-    <header className="w-full mb-8">
+    <header className="mb-8 w-full">
       <div className="flex items-center justify-between">
         <div className="flex items-center">
           <Image

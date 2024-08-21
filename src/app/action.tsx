@@ -1,10 +1,10 @@
-'use server';
+"use server";
 
-import { generateText } from 'ai';
-import { openai } from '@ai-sdk/openai';
-import { redis } from '~/lib/redis';
-import { getServerAuthSession } from '~/server/auth';
-import { cache } from 'react';
+import { generateText } from "ai";
+import { openai } from "@ai-sdk/openai";
+import { redis } from "~/lib/redis";
+import { getServerAuthSession } from "~/server/auth";
+import { cache } from "react";
 
 interface Note {
   id: string;
@@ -51,14 +51,16 @@ export async function addNote(note: Note): Promise<void> {
 export async function updateNote(updatedNote: Note): Promise<void> {
   const userId = await getUserId();
   const notes = await getNotes();
-  const updatedNotes = notes.map(note => note.id === updatedNote.id ? updatedNote : note);
+  const updatedNotes = notes.map((note) =>
+    note.id === updatedNote.id ? updatedNote : note,
+  );
   await redis.set(getUserNotesKey(userId), JSON.stringify(updatedNotes));
 }
 
 export async function deleteNote(id: string): Promise<void> {
   const userId = await getUserId();
   const notes = await getNotes();
-  const updatedNotes = notes.filter(note => note.id !== id);
+  const updatedNotes = notes.filter((note) => note.id !== id);
   await redis.set(getUserNotesKey(userId), JSON.stringify(updatedNotes));
 }
 
@@ -76,9 +78,9 @@ export const getTags = cache(async (): Promise<Tag[]> => {
 
 export async function getAnswer(question: string) {
   const { text, finishReason, usage } = await generateText({
-    model: openai('gpt-3.5-turbo'),
+    model: openai("gpt-3.5-turbo"),
     prompt: question,
   });
-  
+
   return { text, finishReason, usage };
 }

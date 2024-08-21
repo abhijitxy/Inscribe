@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 interface GridPatternProps {
   width?: number;
@@ -15,7 +15,7 @@ export function GridPattern({
   x = 0,
   y = 0,
   squares = [[0, 0]],
-  className = '',
+  className = "",
 }: GridPatternProps) {
   return (
     <svg
@@ -34,8 +34,13 @@ export function GridPattern({
           <path d={`M${width} 0V${height}H0V0Z`} fill="none" />
         </pattern>
       </defs>
-      <rect width="100%" height="100%" strokeWidth={0} fill="url(#grid-pattern)" />
-      {squares.map(([x, y]) => (
+      <rect
+        width="100%"
+        height="100%"
+        strokeWidth={0}
+        fill="url(#grid-pattern)"
+      />
+      {squares.map(([x, y]) =>
         x !== undefined && y !== undefined ? (
           <rect
             key={`${x}-${y}`}
@@ -46,8 +51,8 @@ export function GridPattern({
             className="fill-gray-50 stroke-gray-200"
             strokeWidth={1}
           />
-        ) : null
-      ))}
+        ) : null,
+      )}
     </svg>
   );
 }

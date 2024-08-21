@@ -23,7 +23,7 @@ declare module "next-auth" {
 export const authOptions: NextAuthOptions = {
   callbacks: {
     session: ({ session, token }) => {
-      if (token && typeof token.id === 'string') {
+      if (token && typeof token.id === "string") {
         session.user = {
           ...session.user,
           id: token.id,
@@ -32,7 +32,7 @@ export const authOptions: NextAuthOptions = {
       return session;
     },
     jwt: ({ token, user }) => {
-      if (user && typeof user.id === 'string') {
+      if (user && typeof user.id === "string") {
         token.id = user.id;
       }
       return token;
@@ -47,7 +47,11 @@ export const authOptions: NextAuthOptions = {
     CredentialsProvider({
       name: "Credentials",
       credentials: {
-        email: { label: "Email", type: "email", placeholder: "john.doe@example.com" },
+        email: {
+          label: "Email",
+          type: "email",
+          placeholder: "john.doe@example.com",
+        },
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
@@ -72,7 +76,10 @@ export const authOptions: NextAuthOptions = {
         }
 
         // If user exists, verify password
-        const isPasswordValid = await bcrypt.compare(credentials.password, user.password);
+        const isPasswordValid = await bcrypt.compare(
+          credentials.password,
+          user.password,
+        );
 
         if (!isPasswordValid) {
           throw new Error("Invalid credentials");
@@ -84,10 +91,10 @@ export const authOptions: NextAuthOptions = {
   ],
   pages: {
     signIn: "/auth/signin",
-     // signOut: '/auth/signout',
-//     // error: '/auth/error', // Error code passed in query string as ?error=
-//     // verifyRequest: '/auth/verify-request', // (used for check email message)
-//     // newUser: '/auth/new-user' // New users will be directed here on first sign in (leave the property out if not of interest)
+    // signOut: '/auth/signout',
+    //     // error: '/auth/error', // Error code passed in query string as ?error=
+    //     // verifyRequest: '/auth/verify-request', // (used for check email message)
+    //     // newUser: '/auth/new-user' // New users will be directed here on first sign in (leave the property out if not of interest)
   },
   session: {
     strategy: "jwt",
@@ -96,4 +103,3 @@ export const authOptions: NextAuthOptions = {
 };
 
 export const getServerAuthSession = () => getServerSession(authOptions);
-
