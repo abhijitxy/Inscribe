@@ -9,7 +9,7 @@ export default function MainContent() {
         </span>
       </h2>
       <p className="text-sm sm:text-base md:text-lg text-gray-200 max-w-xs sm:max-w-lg md:max-w-2xl mx-auto">
-      "Extract notes, organize smartly, and gain instant insights with AI."
+      Extract notes, organize smartly and gain instant insights with AI
       </p>
     </div>
   );
