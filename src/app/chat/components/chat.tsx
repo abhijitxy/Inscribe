@@ -40,6 +40,7 @@ export default function NoteTakingApp() {
   const [isAIEnabled, setIsAIEnabled] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
   const updateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
@@ -153,6 +154,9 @@ export default function NoteTakingApp() {
       textareaRef.current.style.height = "auto";
       textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
     }
+    if (contentRef.current) {
+      contentRef.current.scrollTop = contentRef.current.scrollHeight;
+    }
   }, [selectedNote?.content]);
 
   return (
@@ -169,7 +173,7 @@ export default function NoteTakingApp() {
         onClose={() => setIsSidebarOpen(false)}
       />
       <div className="flex flex-1 flex-col overflow-hidden">
-        <div className="flex items-center justify-between border-b border-neutral-800 p-4 md:p-6">
+        <div className="flex items-center justify-between border-b border-neutral-800 p-4">
           <div className="flex items-center">
             <button
               onClick={toggleSidebar}
@@ -177,24 +181,30 @@ export default function NoteTakingApp() {
             >
               <Menu className="h-6 w-6" />
             </button>
-            <h1 className="text-2xl font-bold md:text-3xl">Notes</h1>
+            <h1 className="text-2xl font-bold">Notes</h1>
           </div>
           <button
             onClick={handleNewNote}
-            className="flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm text-white transition-colors hover:bg-indigo-700 md:px-4 md:py-2 md:text-base"
+            className="flex items-center rounded-md bg-indigo-600 px-3 py-2 text-white transition-colors hover:bg-indigo-700"
           >
-            <PlusCircle className="mr-2 h-4 w-4 md:h-5 md:w-5" />
+            <PlusCircle className="mr-2 h-5 w-5" />
             New Note
           </button>
         </div>
-        <div className="flex-1 overflow-auto p-4 md:p-6">
+        <div ref={contentRef} className="flex-1 overflow-auto p-4 md:p-6">
           {selectedNote ? (
             <div className="flex h-full flex-col rounded-lg bg-neutral-900 p-4 shadow-lg">
               <input
                 type="text"
                 value={selectedNote.title}
                 onChange={(e) => handleNoteChange("title", e.target.value)}
-                className="mb-4 rounded-md bg-neutral-800 p-2 text-lg font-semibold text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 md:p-3 md:text-xl"
+                className="mb-4 rounded-md border-2 border-transparent bg-neutral-800 p-2 text-lg font-semibold text-white transition-all duration-300 ease-in-out focus:border-transparent focus:outline-none focus:ring-0 md:p-3 md:text-xl"
+                style={{
+                  backgroundImage:
+                    "linear-gradient(#1f1f1f, #1f1f1f), linear-gradient(to right, #4f46e5, #7c3aed, #a21caf)",
+                  backgroundOrigin: "border-box",
+                  backgroundClip: "padding-box, border-box",
+                }}
                 placeholder="Note title"
               />
               <div className="relative flex-1 overflow-hidden">
@@ -202,7 +212,13 @@ export default function NoteTakingApp() {
                   ref={textareaRef}
                   value={selectedNote.content}
                   onChange={(e) => handleNoteChange("content", e.target.value)}
-                  className="h-full min-h-[200px] w-full resize-none overflow-auto rounded-md bg-neutral-800 p-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 md:p-3 md:text-base"
+                  className="h-full min-h-[200px] w-full resize-none rounded-md border-2 border-transparent  p-2 text-sm text-white transition-all duration-300 ease-in-out focus:border-transparent focus:outline-none focus:ring-0 md:p-3 md:text-base"
+                  style={{
+                    backgroundImage:
+                      "linear-gradient(#1f1f1f, #1f1f1f), linear-gradient(to right, #4f46e5, #7c3aed, #a21caf)",
+                    backgroundOrigin: "border-box",
+                    backgroundClip: "padding-box, border-box",
+                  }}
                   placeholder="Start typing your note... (Type '/' to enable AI assist)"
                 />
                 {isLoading && (
