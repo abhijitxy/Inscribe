@@ -1,35 +1,20 @@
-import React from "react";
-import { Folder, Tag, Search, X } from "lucide-react";
+import React, { type Dispatch, type SetStateAction } from "react";
+import { Search, X } from "lucide-react";
 
 interface Note {
   id: string;
   title: string;
   content: string;
-  folderId?: string;
-  tags: string[];
 }
 
-interface Folder {
-  id: string;
-  name: string;
-}
-
-interface Tag {
-  id: string;
-  name: string;
-}
 
 interface NoteSidebarProps {
   notes: Note[];
-  folders: Folder[];
-  tags: Tag[];
-  onSelectNote: (note: Note) => void;
-  onSelectFolder: (id: string) => void;
-  onSelectTag: (id: string) => void;
+  onSelectNote: Dispatch<SetStateAction<Note | null>>;
   onSearch: (query: string) => void;
   isOpen: boolean;
   onClose: () => void;
-  onDeleteNote: (noteId: string) => Promise<void>; // Add this line
+  onDeleteNote: (noteId: string) => Promise<void>;
 }
 
 const NoteSidebar: React.FC<NoteSidebarProps> = ({

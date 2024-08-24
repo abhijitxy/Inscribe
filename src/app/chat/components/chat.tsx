@@ -8,8 +8,6 @@ import {
   addNote,
   updateNote,
   deleteNote,
-  getFolders,
-  getTags,
   getAnswer,
 } from "@/app/action";
 
@@ -17,24 +15,10 @@ interface Note {
   id: string;
   title: string;
   content: string;
-  folderId?: string;
-  tags: string[];
-}
-
-interface Folder {
-  id: string;
-  name: string;
-}
-
-interface Tag {
-  id: string;
-  name: string;
 }
 
 export default function NoteTakingApp() {
   const [notes, setNotes] = useState<Note[]>([]);
-  const [folders, setFolders] = useState<Folder[]>([]);
-  const [tags, setTags] = useState<Tag[]>([]);
   const [selectedNote, setSelectedNote] = useState<Note | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isAIEnabled, setIsAIEnabled] = useState(false);
@@ -53,14 +37,10 @@ export default function NoteTakingApp() {
   }, []);
 
   const fetchData = async () => {
-    const [fetchedNotes, fetchedFolders, fetchedTags] = await Promise.all([
+    const [fetchedNotes,] = await Promise.all([
       getNotes(),
-      getFolders(),
-      getTags(),
     ]);
     setNotes(fetchedNotes);
-    setFolders(fetchedFolders);
-    setTags(fetchedTags);
   };
 
   const handleNewNote = async () => {
@@ -68,7 +48,6 @@ export default function NoteTakingApp() {
       id: Date.now().toString(),
       title: "New Note",
       content: "",
-      tags: [],
     };
     setNotes((prevNotes) => [...prevNotes, newNote]);
     setSelectedNote(newNote);
@@ -140,15 +119,6 @@ export default function NoteTakingApp() {
     }
   };
 
-  const handleSelectFolder = (id: string) => {
-    const filteredNotes = notes.filter((note) => note.folderId === id);
-    setNotes(filteredNotes);
-  };
-
-  const handleSelectTag = (id: string) => {
-    const filteredNotes = notes.filter((note) => note.tags.includes(id));
-    setNotes(filteredNotes);
-  };
 
   const handleSearch = (query: string) => {
     const searchResults = notes.filter(
@@ -177,11 +147,7 @@ export default function NoteTakingApp() {
     <div className="flex h-screen overflow-hidden bg-neutral-950 text-white">
       <NoteSidebar
         notes={notes}
-        folders={folders}
-        tags={tags}
         onSelectNote={setSelectedNote}
-        onSelectFolder={handleSelectFolder}
-        onSelectTag={handleSelectTag}
         onSearch={handleSearch}
         isOpen={isSidebarOpen}
         onClose={() => setIsSidebarOpen(false)}

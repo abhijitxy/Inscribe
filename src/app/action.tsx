@@ -10,18 +10,6 @@ interface Note {
   id: string;
   title: string;
   content: string;
-  folderId?: string;
-  tags: string[];
-}
-
-interface Folder {
-  id: string;
-  name: string;
-}
-
-interface Tag {
-  id: string;
-  name: string;
 }
 
 const getUserId = cache(async (): Promise<string> => {
@@ -63,18 +51,6 @@ export async function deleteNote(id: string): Promise<void> {
   const updatedNotes = notes.filter((note) => note.id !== id);
   await redis.set(getUserNotesKey(userId), JSON.stringify(updatedNotes));
 }
-
-export const getFolders = cache(async (): Promise<Folder[]> => {
-  const userId = await getUserId();
-  const foldersString = await redis.get(`user:${userId}:folders`);
-  return foldersString ? JSON.parse(foldersString) : [];
-});
-
-export const getTags = cache(async (): Promise<Tag[]> => {
-  const userId = await getUserId();
-  const tagsString = await redis.get(`user:${userId}:tags`);
-  return tagsString ? JSON.parse(tagsString) : [];
-});
 
 export async function getAnswer(question: string) {
   const { text, finishReason, usage } = await generateText({
