@@ -29,15 +29,12 @@ interface NoteSidebarProps {
   onSearch: (query: string) => void;
   isOpen: boolean;
   onClose: () => void;
+  onDeleteNote: (noteId: string) => Promise<void>; // Add this line
 }
 
 const NoteSidebar: React.FC<NoteSidebarProps> = ({
   notes,
-  folders,
-  tags,
   onSelectNote,
-  onSelectFolder,
-  onSelectTag,
   onSearch,
   isOpen,
   onClose,

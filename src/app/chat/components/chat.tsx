@@ -75,6 +75,20 @@ export default function NoteTakingApp() {
     await addNote(newNote);
   };
 
+  const handleDeleteNote = async (noteId: string) => {
+    if (window.confirm("Are you sure you want to delete this note?")) {
+      try {
+        await deleteNote(noteId);
+        setNotes((prevNotes) => prevNotes.filter((note) => note.id !== noteId));
+        if (selectedNote && selectedNote.id === noteId) {
+          setSelectedNote(null);
+        }
+      } catch (error) {
+        console.error("Error deleting note:", error);
+      }
+    }
+  };
+
   const handleNoteChange = (field: "title" | "content", value: string) => {
     if (selectedNote) {
       const updatedNote = { ...selectedNote, [field]: value };
@@ -171,6 +185,7 @@ export default function NoteTakingApp() {
         onSearch={handleSearch}
         isOpen={isSidebarOpen}
         onClose={() => setIsSidebarOpen(false)}
+        onDeleteNote={handleDeleteNote}
       />
       <div className="flex flex-1 flex-col overflow-hidden">
         <div className="flex items-center justify-between border-b border-neutral-800 p-4">
@@ -181,7 +196,7 @@ export default function NoteTakingApp() {
             >
               <Menu className="h-6 w-6" />
             </button>
-            <h1 className="text-2xl font-bold">Notes</h1>
+            <h1 className="text-2xl font-bold">Inscribe</h1>
           </div>
           <button
             onClick={handleNewNote}
@@ -193,7 +208,7 @@ export default function NoteTakingApp() {
         </div>
         <div ref={contentRef} className="flex-1 overflow-auto p-4 md:p-6">
           {selectedNote ? (
-            <div className="flex h-full flex-col rounded-lg bg-neutral-900 p-4 shadow-lg">
+            <div className="flex flex-col rounded-lg bg-neutral-900 p-4 shadow-lg">
               <input
                 type="text"
                 value={selectedNote.title}
@@ -212,7 +227,7 @@ export default function NoteTakingApp() {
                   ref={textareaRef}
                   value={selectedNote.content}
                   onChange={(e) => handleNoteChange("content", e.target.value)}
-                  className="h-full min-h-[200px] w-full resize-none rounded-md border-2 border-transparent  p-2 text-sm text-white transition-all duration-300 ease-in-out focus:border-transparent focus:outline-none focus:ring-0 md:p-3 md:text-base"
+                  className="h-full min-h-[200px] w-full resize-none rounded-md border-2 border-transparent p-2 text-sm text-white transition-all duration-300 ease-in-out focus:border-transparent focus:outline-none focus:ring-0 md:p-3 md:text-base"
                   style={{
                     backgroundImage:
                       "linear-gradient(#1f1f1f, #1f1f1f), linear-gradient(to right, #4f46e5, #7c3aed, #a21caf)",
@@ -227,6 +242,12 @@ export default function NoteTakingApp() {
                   </div>
                 )}
               </div>
+              <button
+                onClick={() => handleDeleteNote(selectedNote.id)}
+                className="mt-4 self-end rounded-md bg-red-600 px-3 py-2 text-white transition-colors hover:bg-red-700"
+              >
+                Delete Note
+              </button>
             </div>
           ) : (
             <div className="flex flex-1 items-center justify-center text-neutral-500">
