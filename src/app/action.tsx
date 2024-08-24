@@ -27,7 +27,7 @@ function getUserNotesKey(userId: string): string {
 export const getNotes = cache(async (): Promise<Note[]> => {
   const userId = await getUserId();
   const notesString = await redis.get(getUserNotesKey(userId));
-  return notesString ? JSON.parse(notesString) : [];
+  return notesString ? JSON.parse(notesString) as Note[] : [];
 });
 
 export async function addNote(note: Note): Promise<void> {

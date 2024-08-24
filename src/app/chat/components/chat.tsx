@@ -21,14 +21,17 @@ export default function NoteTakingApp() {
   const [notes, setNotes] = useState<Note[]>([]);
   const [selectedNote, setSelectedNote] = useState<Note | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [isAIEnabled, setIsAIEnabled] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const updateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    fetchData();
+    const fetchDataAsync = async () => {
+      await fetchData();
+    };
+    fetchDataAsync().catch(console.error);
+  
     return () => {
       if (updateTimeoutRef.current) {
         clearTimeout(updateTimeoutRef.current);
@@ -77,23 +80,22 @@ export default function NoteTakingApp() {
           note.id === selectedNote.id ? updatedNote : note,
         ),
       );
-
+  
       if (updateTimeoutRef.current) {
         clearTimeout(updateTimeoutRef.current);
       }
-
-      updateTimeoutRef.current = setTimeout(async () => {
-        await updateNote(updatedNote);
+  
+      updateTimeoutRef.current = setTimeout(() => {
+        updateNote(updatedNote).catch(console.error);
       }, 2000);
-
+  
       if (field === "content" && value.endsWith("/")) {
-        handleAIAssist(value);
+        handleAIAssist(value).catch(console.error);
       }
     }
   };
 
   const handleAIAssist = async (content: string) => {
-    setIsAIEnabled(true);
     setIsLoading(true);
     const prompt = content.slice(0, -1).trim();
     try {
@@ -115,7 +117,6 @@ export default function NoteTakingApp() {
       console.error("Error getting AI response:", error);
     } finally {
       setIsLoading(false);
-      setIsAIEnabled(false);
     }
   };
 
