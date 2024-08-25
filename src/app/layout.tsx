@@ -6,7 +6,7 @@ import SessionWrapper from "./components/SessionWrapper";
 export const metadata: Metadata = {
   title: "Inscribe",
   description: "Notes on steroids",
-  icons: [{ rel: "icon", url: "/favicon.ico" }],
+  icons: [{ rel: "icon", url: "/logo.ico" }],
 };
 
 export default function RootLayout({

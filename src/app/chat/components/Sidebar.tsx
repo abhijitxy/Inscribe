@@ -7,7 +7,6 @@ interface Note {
   content: string;
 }
 
-
 interface NoteSidebarProps {
   notes: Note[];
   onSelectNote: Dispatch<SetStateAction<Note | null>>;

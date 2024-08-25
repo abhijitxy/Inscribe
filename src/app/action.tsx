@@ -53,10 +53,13 @@ export async function deleteNote(id: string): Promise<void> {
 }
 
 export async function getAnswer(question: string) {
+  const prompt = `Continue the following text from where it stops, without rewriting or repeating the existing part: "${question}". Provide a natural and coherent continuation.`;
+  
   const { text, finishReason, usage } = await generateText({
-    model: openai("gpt-4o"),
-    prompt: question,
+      model: openai("gpt-4o"),
+      prompt: prompt,
   });
 
   return { text, finishReason, usage };
 }
+
