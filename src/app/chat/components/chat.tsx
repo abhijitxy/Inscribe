@@ -89,20 +89,24 @@ export default function NoteTakingApp() {
       }, 2000);
 
       if (field === "content" && value.endsWith("/")) {
+        console.log("Triggering AI assist");
         handleAIAssist(value).catch(console.error);
       }
     }
   };
 
   const handleAIAssist = async (content: string) => {
+    console.log("handleAIAssist called with content:", content);
     setIsLoading(true);
     const prompt = content.slice(0, -1).trim();
     try {
+      console.log("Sending prompt to getAnswer:", prompt);
       const { text } = await getAnswer(prompt);
+      console.log("Received AI response:", text);
       if (selectedNote) {
         const updatedNote = {
           ...selectedNote,
-          content: selectedNote.content.slice(0, -1) + " " + text,
+          content: selectedNote.content + text,
         };
         setSelectedNote(updatedNote);
         setNotes((prevNotes) =>
@@ -186,7 +190,7 @@ export default function NoteTakingApp() {
               <div className="relative flex-1">
                 <textarea
                   ref={textareaRef}
-                  contentEditable
+                  value={selectedNote.content}
                   onChange={(e) => handleNoteChange("content", e.target.value)}
                   className="min-h-[200px] w-full rounded-md border-none bg-transparent p-2 text-sm text-white placeholder-[#6c7086] focus:outline-none focus:ring-2 focus:ring-[#89b4fa]"
                   placeholder="Start typing your note... (Type '/' to enable AI assist)"
