@@ -6,7 +6,7 @@ export default function DashboardImage() {
       <div className="mx-auto max-w-sm sm:max-w-md md:max-w-lg lg:max-w-4xl xl:max-w-5xl">
         <div className="overflow-hidden rounded-lg border-[6px] border-neutral-950 sm:border-[8px] md:border-[10px]">
           <Image
-            src="/dashboard.webp"
+            src="/hero.webp"
             alt="Dashboard"
             width={1200}
             height={800}
