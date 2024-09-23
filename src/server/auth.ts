@@ -5,7 +5,7 @@ import {
   type NextAuthOptions,
 } from "next-auth";
 import { type Adapter } from "next-auth/adapters";
-import DiscordProvider from "next-auth/providers/discord";
+import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcrypt";
 
@@ -37,12 +37,63 @@ export const authOptions: NextAuthOptions = {
       }
       return token;
     },
+    signIn: async ({ user, account, profile }) => {
+      if (account?.provider === "google") {
+        const existingUser = await db.user.findUnique({
+          where: { email: user.email ?? undefined },
+        });
+        
+        if (existingUser) {
+          // If the user exists, link the Google account
+          await db.account.create({
+            data: {
+              userId: existingUser.id,
+              type: account.type,
+              provider: account.provider,
+              providerAccountId: account.providerAccountId,
+              access_token: account.access_token,
+              expires_at: account.expires_at,
+              token_type: account.token_type,
+              scope: account.scope,
+              id_token: account.id_token,
+              session_state: account.session_state,
+            },
+          });
+          return true;
+        } else {
+          // If the user doesn't exist, create a new one
+          await db.user.create({
+            data: {
+              name: user.name ?? undefined,
+              email: user.email ?? undefined,
+              image: user.image ?? undefined,
+              emailVerified: new Date(),
+              password: "", // Provide an empty string as a default password
+              accounts: {
+                create: {
+                  type: account.type,
+                  provider: account.provider,
+                  providerAccountId: account.providerAccountId,
+                  access_token: account.access_token,
+                  expires_at: account.expires_at,
+                  token_type: account.token_type,
+                  scope: account.scope,
+                  id_token: account.id_token,
+                  session_state: account.session_state,
+                },
+              },
+            },
+          });
+        }
+      }
+      return true;
+    },
   },
   adapter: PrismaAdapter(db) as Adapter,
   providers: [
-    DiscordProvider({
-      clientId: env.DISCORD_CLIENT_ID,
-      clientSecret: env.DISCORD_CLIENT_SECRET,
+    GoogleProvider({
+      clientId: env.GOOGLE_CLIENT_ID,
+      clientSecret: env.GOOGLE_CLIENT_SECRET,
     }),
     CredentialsProvider({
       name: "Credentials",
@@ -58,43 +109,34 @@ export const authOptions: NextAuthOptions = {
         if (!credentials?.email || !credentials?.password) {
           throw new Error("Invalid credentials");
         }
-
+        
         const user = await db.user.findUnique({
           where: { email: credentials.email },
         });
-
+        
         if (!user) {
-          // If user doesn't exist, create a new one
-          const hashedPassword = await bcrypt.hash(credentials.password, 10);
-          const newUser = await db.user.create({
-            data: {
-              email: credentials.email,
-              password: hashedPassword,
-            },
-          });
-          return newUser;
+          throw new Error("User not found");
         }
-
-        // If user exists, verify password
+        
+        if (!user.password) {
+          throw new Error("Please login with Google or set a password");
+        }
+        
         const isPasswordValid = await bcrypt.compare(
           credentials.password,
-          user.password,
+          user.password
         );
-
+        
         if (!isPasswordValid) {
           throw new Error("Invalid credentials");
         }
-
-        return user; // Ensure the user object is returned correctly
+        
+        return user;
       },
     }),
   ],
   pages: {
     signIn: "/auth/signin",
-    // signOut: '/auth/signout',
-    //     // error: '/auth/error', // Error code passed in query string as ?error=
-    //     // verifyRequest: '/auth/verify-request', // (used for check email message)
-    //     // newUser: '/auth/new-user' // New users will be directed here on first sign in (leave the property out if not of interest)
   },
   session: {
     strategy: "jwt",

@@ -25,6 +25,21 @@ export default function LoginPage() {
     }
   };
 
+  const handleGoogleSignIn = async () => {
+    try {
+      const result = await signIn("google", {
+        redirect: false,
+      });
+      if (result?.ok) {
+        window.location.href = "/chat";
+      } else {
+        console.error(result?.error);
+      } 
+    } catch (error) {
+      console.error("Error during sign-in:", error);
+    }
+  }
+
   return (
     <main className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden text-white">
       {/* Radial gradient background */}
@@ -103,7 +118,7 @@ export default function LoginPage() {
               <div className="ml-2 flex-grow border-t border-gray-600"></div>
             </div>
             <div className="flex justify-center">
-              <button
+              <button onSubmit={handleGoogleSignIn}
                 type="button"
                 className="flex items-center rounded-md border border-gray-600 bg-white/10 px-4 py-2 text-white hover:bg-white/20"
                 onClick={() => signIn("google")}
